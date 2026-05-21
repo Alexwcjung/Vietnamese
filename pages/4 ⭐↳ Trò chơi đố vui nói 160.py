@@ -3,201 +3,19 @@ import streamlit.components.v1 as components
 import json
 
 st.set_page_config(
-    page_title="생존 단어 카드 말하기 게임",
+    page_title="Survival Word Card Speaking Game",
     page_icon="🃏",
     layout="wide"
 )
 
 # =========================================================
-# 생존 단어 160개
+# Survival words
 # =========================================================
-WORD_THEMES = {
-    "🧍 나와 사람": [
-        {"word": "I", "meaning": "나", "emoji": "🙋"},
-        {"word": "you", "meaning": "너, 당신", "emoji": "👉"},
-        {"word": "he", "meaning": "그", "emoji": "👦"},
-        {"word": "she", "meaning": "그녀", "emoji": "👧"},
-        {"word": "we", "meaning": "우리", "emoji": "👥"},
-        {"word": "they", "meaning": "그들", "emoji": "👥"},
-        {"word": "friend", "meaning": "친구", "emoji": "🤝"},
-        {"word": "teacher", "meaning": "선생님", "emoji": "👩‍🏫"},
-        {"word": "student", "meaning": "학생", "emoji": "🧑‍🎓"},
-        {"word": "classmate", "meaning": "반 친구", "emoji": "👫"},
-        {"word": "family", "meaning": "가족", "emoji": "👨‍👩‍👧"},
-        {"word": "father", "meaning": "아버지", "emoji": "👨"},
-        {"word": "mother", "meaning": "어머니", "emoji": "👩"},
-        {"word": "brother", "meaning": "형제, 남자 형제", "emoji": "👦"},
-        {"word": "sister", "meaning": "자매, 여자 형제", "emoji": "👧"},
-        {"word": "name", "meaning": "이름", "emoji": "🏷️"},
-        {"word": "person", "meaning": "사람", "emoji": "🧍"},
-        {"word": "man", "meaning": "남자", "emoji": "👨"},
-        {"word": "woman", "meaning": "여자", "emoji": "👩"},
-        {"word": "child", "meaning": "아이", "emoji": "🧒"},
-    ],
-    "🏃 기본 동작": [
-        {"word": "go", "meaning": "가다", "emoji": "➡️"},
-        {"word": "come", "meaning": "오다", "emoji": "⬅️"},
-        {"word": "walk", "meaning": "걷다", "emoji": "🚶"},
-        {"word": "run", "meaning": "달리다", "emoji": "🏃"},
-        {"word": "sit", "meaning": "앉다", "emoji": "🪑"},
-        {"word": "stand", "meaning": "서다", "emoji": "🧍"},
-        {"word": "stop", "meaning": "멈추다", "emoji": "🛑"},
-        {"word": "start", "meaning": "시작하다", "emoji": "▶️"},
-        {"word": "open", "meaning": "열다", "emoji": "📂"},
-        {"word": "close", "meaning": "닫다", "emoji": "📕"},
-        {"word": "eat", "meaning": "먹다", "emoji": "🍽️"},
-        {"word": "drink", "meaning": "마시다", "emoji": "🥤"},
-        {"word": "sleep", "meaning": "자다", "emoji": "😴"},
-        {"word": "study", "meaning": "공부하다", "emoji": "📚"},
-        {"word": "read", "meaning": "읽다", "emoji": "📖"},
-        {"word": "write", "meaning": "쓰다", "emoji": "✏️"},
-        {"word": "listen", "meaning": "듣다", "emoji": "👂"},
-        {"word": "speak", "meaning": "말하다", "emoji": "🗣️"},
-        {"word": "help", "meaning": "돕다", "emoji": "🆘"},
-        {"word": "wait", "meaning": "기다리다", "emoji": "⏳"},
-    ],
-    "💖 감정·몸 상태": [
-        {"word": "happy", "meaning": "행복한", "emoji": "😊"},
-        {"word": "sad", "meaning": "슬픈", "emoji": "😢"},
-        {"word": "angry", "meaning": "화난", "emoji": "😠"},
-        {"word": "tired", "meaning": "피곤한", "emoji": "🥱"},
-        {"word": "hungry", "meaning": "배고픈", "emoji": "😋"},
-        {"word": "thirsty", "meaning": "목마른", "emoji": "🥤"},
-        {"word": "sick", "meaning": "아픈", "emoji": "🤒"},
-        {"word": "okay", "meaning": "괜찮은", "emoji": "👌"},
-        {"word": "fine", "meaning": "괜찮은", "emoji": "🙂"},
-        {"word": "cold", "meaning": "추운, 차가운", "emoji": "🥶"},
-        {"word": "hot", "meaning": "더운, 뜨거운", "emoji": "🥵"},
-        {"word": "pain", "meaning": "통증", "emoji": "🤕"},
-        {"word": "headache", "meaning": "두통", "emoji": "🤯"},
-        {"word": "stomachache", "meaning": "복통", "emoji": "🤢"},
-        {"word": "fever", "meaning": "열", "emoji": "🌡️"},
-        {"word": "hurt", "meaning": "아프다, 다치다", "emoji": "🩹"},
-        {"word": "good", "meaning": "좋은", "emoji": "👍"},
-        {"word": "bad", "meaning": "나쁜", "emoji": "👎"},
-        {"word": "worried", "meaning": "걱정하는", "emoji": "😟"},
-        {"word": "scared", "meaning": "무서워하는", "emoji": "😨"},
-    ],
-    "🍎 음식·물": [
-        {"word": "food", "meaning": "음식", "emoji": "🍽️"},
-        {"word": "water", "meaning": "물", "emoji": "💧"},
-        {"word": "rice", "meaning": "밥, 쌀", "emoji": "🍚"},
-        {"word": "bread", "meaning": "빵", "emoji": "🍞"},
-        {"word": "milk", "meaning": "우유", "emoji": "🥛"},
-        {"word": "juice", "meaning": "주스", "emoji": "🧃"},
-        {"word": "coffee", "meaning": "커피", "emoji": "☕"},
-        {"word": "tea", "meaning": "차", "emoji": "🍵"},
-        {"word": "apple", "meaning": "사과", "emoji": "🍎"},
-        {"word": "banana", "meaning": "바나나", "emoji": "🍌"},
-        {"word": "egg", "meaning": "달걀", "emoji": "🥚"},
-        {"word": "meat", "meaning": "고기", "emoji": "🥩"},
-        {"word": "chicken", "meaning": "닭고기, 닭", "emoji": "🍗"},
-        {"word": "fish", "meaning": "생선, 물고기", "emoji": "🐟"},
-        {"word": "breakfast", "meaning": "아침 식사", "emoji": "🍳"},
-        {"word": "lunch", "meaning": "점심 식사", "emoji": "🍱"},
-        {"word": "dinner", "meaning": "저녁 식사", "emoji": "🍽️"},
-        {"word": "snack", "meaning": "간식", "emoji": "🍪"},
-        {"word": "medicine", "meaning": "약", "emoji": "💊"},
-        {"word": "hospital", "meaning": "병원", "emoji": "🏥"},
-    ],
-    "🚗 장소·이동": [
-        {"word": "home", "meaning": "집", "emoji": "🏠"},
-        {"word": "school", "meaning": "학교", "emoji": "🏫"},
-        {"word": "classroom", "meaning": "교실", "emoji": "🧑‍🏫"},
-        {"word": "bathroom", "meaning": "화장실", "emoji": "🚻"},
-        {"word": "hospital", "meaning": "병원", "emoji": "🏥"},
-        {"word": "store", "meaning": "가게", "emoji": "🏪"},
-        {"word": "station", "meaning": "역", "emoji": "🚉"},
-        {"word": "bus", "meaning": "버스", "emoji": "🚌"},
-        {"word": "car", "meaning": "자동차", "emoji": "🚗"},
-        {"word": "taxi", "meaning": "택시", "emoji": "🚕"},
-        {"word": "train", "meaning": "기차", "emoji": "🚆"},
-        {"word": "bike", "meaning": "자전거", "emoji": "🚲"},
-        {"word": "road", "meaning": "도로", "emoji": "🛣️"},
-        {"word": "street", "meaning": "거리", "emoji": "🏙️"},
-        {"word": "here", "meaning": "여기", "emoji": "📍"},
-        {"word": "there", "meaning": "거기", "emoji": "📌"},
-        {"word": "near", "meaning": "가까운", "emoji": "↔️"},
-        {"word": "far", "meaning": "먼", "emoji": "🌁"},
-        {"word": "left", "meaning": "왼쪽", "emoji": "⬅️"},
-        {"word": "right", "meaning": "오른쪽, 맞는", "emoji": "➡️"},
-    ],
-    "⏰ 시간·숫자": [
-        {"word": "time", "meaning": "시간", "emoji": "⏰"},
-        {"word": "now", "meaning": "지금", "emoji": "🕒"},
-        {"word": "today", "meaning": "오늘", "emoji": "📅"},
-        {"word": "tomorrow", "meaning": "내일", "emoji": "➡️📅"},
-        {"word": "yesterday", "meaning": "어제", "emoji": "⬅️📅"},
-        {"word": "morning", "meaning": "아침", "emoji": "🌅"},
-        {"word": "afternoon", "meaning": "오후", "emoji": "☀️"},
-        {"word": "evening", "meaning": "저녁", "emoji": "🌆"},
-        {"word": "night", "meaning": "밤", "emoji": "🌙"},
-        {"word": "early", "meaning": "이른", "emoji": "🐓"},
-        {"word": "late", "meaning": "늦은", "emoji": "🌃"},
-        {"word": "one", "meaning": "하나", "emoji": "1️⃣"},
-        {"word": "two", "meaning": "둘", "emoji": "2️⃣"},
-        {"word": "three", "meaning": "셋", "emoji": "3️⃣"},
-        {"word": "four", "meaning": "넷", "emoji": "4️⃣"},
-        {"word": "five", "meaning": "다섯", "emoji": "5️⃣"},
-        {"word": "six", "meaning": "여섯", "emoji": "6️⃣"},
-        {"word": "seven", "meaning": "일곱", "emoji": "7️⃣"},
-        {"word": "eight", "meaning": "여덟", "emoji": "8️⃣"},
-        {"word": "ten", "meaning": "열", "emoji": "🔟"},
-    ],
-    "🎒 물건·돈": [
-        {"word": "bag", "meaning": "가방", "emoji": "🎒"},
-        {"word": "phone", "meaning": "전화기", "emoji": "📱"},
-        {"word": "book", "meaning": "책", "emoji": "📘"},
-        {"word": "notebook", "meaning": "공책", "emoji": "📓"},
-        {"word": "pen", "meaning": "펜", "emoji": "🖊️"},
-        {"word": "pencil", "meaning": "연필", "emoji": "✏️"},
-        {"word": "desk", "meaning": "책상", "emoji": "🪑"},
-        {"word": "chair", "meaning": "의자", "emoji": "🪑"},
-        {"word": "door", "meaning": "문", "emoji": "🚪"},
-        {"word": "window", "meaning": "창문", "emoji": "🪟"},
-        {"word": "key", "meaning": "열쇠", "emoji": "🔑"},
-        {"word": "money", "meaning": "돈", "emoji": "💵"},
-        {"word": "card", "meaning": "카드", "emoji": "💳"},
-        {"word": "ticket", "meaning": "표, 티켓", "emoji": "🎫"},
-        {"word": "clothes", "meaning": "옷", "emoji": "👕"},
-        {"word": "shoes", "meaning": "신발", "emoji": "👟"},
-        {"word": "hat", "meaning": "모자", "emoji": "🧢"},
-        {"word": "watch", "meaning": "시계", "emoji": "⌚"},
-        {"word": "cup", "meaning": "컵", "emoji": "☕"},
-        {"word": "bottle", "meaning": "병", "emoji": "🍼"},
-    ],
-    "🆘 도움 요청": [
-        {"word": "help", "meaning": "도움, 돕다", "emoji": "🆘"},
-        {"word": "please", "meaning": "부디, 제발", "emoji": "🙏"},
-        {"word": "sorry", "meaning": "미안합니다", "emoji": "🙇"},
-        {"word": "excuse me", "meaning": "실례합니다", "emoji": "🙋"},
-        {"word": "again", "meaning": "다시", "emoji": "🔁"},
-        {"word": "slowly", "meaning": "천천히", "emoji": "🐢"},
-        {"word": "understand", "meaning": "이해하다", "emoji": "💡"},
-        {"word": "question", "meaning": "질문", "emoji": "❓"},
-        {"word": "problem", "meaning": "문제", "emoji": "⚠️"},
-        {"word": "need", "meaning": "필요하다", "emoji": "📌"},
-        {"word": "want", "meaning": "원하다", "emoji": "✨"},
-        {"word": "know", "meaning": "알다", "emoji": "🧠"},
-        {"word": "say", "meaning": "말하다", "emoji": "💬"},
-        {"word": "tell", "meaning": "말하다, 알려주다", "emoji": "📣"},
-        {"word": "ask", "meaning": "묻다", "emoji": "❔"},
-        {"word": "answer", "meaning": "대답, 답", "emoji": "✅"},
-        {"word": "repeat", "meaning": "반복하다", "emoji": "🔁"},
-        {"word": "speak", "meaning": "말하다", "emoji": "🗣️"},
-        {"word": "look", "meaning": "보다", "emoji": "👀"},
-        {"word": "listen", "meaning": "듣다", "emoji": "👂"},
-    ],
-}
+WORD_THEMES = {'🧍 Tôi và mọi người': [{'word': 'I', 'meaning': 'tôi', 'emoji': '🙋'}, {'word': 'you', 'meaning': 'bạn', 'emoji': '👉'}, {'word': 'he', 'meaning': 'anh ấy', 'emoji': '👦'}, {'word': 'she', 'meaning': 'cô ấy', 'emoji': '👧'}, {'word': 'we', 'meaning': 'chúng tôi', 'emoji': '👥'}, {'word': 'they', 'meaning': 'họ', 'emoji': '👥'}, {'word': 'friend', 'meaning': 'bạn bè', 'emoji': '🤝'}, {'word': 'teacher', 'meaning': 'giáo viên', 'emoji': '👩\u200d🏫'}, {'word': 'student', 'meaning': 'học sinh', 'emoji': '🧑\u200d🎓'}, {'word': 'classmate', 'meaning': 'bạn cùng lớp', 'emoji': '👫'}, {'word': 'family', 'meaning': 'gia đình', 'emoji': '👨\u200d👩\u200d👧'}, {'word': 'father', 'meaning': 'bố', 'emoji': '👨'}, {'word': 'mother', 'meaning': 'mẹ', 'emoji': '👩'}, {'word': 'brother', 'meaning': 'anh/em trai', 'emoji': '👦'}, {'word': 'sister', 'meaning': 'chị/em gái', 'emoji': '👧'}, {'word': 'name', 'meaning': 'tên', 'emoji': '🏷️'}, {'word': 'person', 'meaning': 'người', 'emoji': '🧍'}, {'word': 'man', 'meaning': 'đàn ông', 'emoji': '👨'}, {'word': 'woman', 'meaning': 'phụ nữ', 'emoji': '👩'}, {'word': 'child', 'meaning': 'trẻ em', 'emoji': '🧒'}], '🏃 Hành động cơ bản': [{'word': 'go', 'meaning': 'đi', 'emoji': '➡️'}, {'word': 'come', 'meaning': 'đến', 'emoji': '⬅️'}, {'word': 'walk', 'meaning': 'đi bộ', 'emoji': '🚶'}, {'word': 'run', 'meaning': 'chạy', 'emoji': '🏃'}, {'word': 'sit', 'meaning': 'ngồi', 'emoji': '🪑'}, {'word': 'stand', 'meaning': 'đứng', 'emoji': '🧍'}, {'word': 'stop', 'meaning': 'dừng lại', 'emoji': '🛑'}, {'word': 'start', 'meaning': 'bắt đầu', 'emoji': '▶️'}, {'word': 'open', 'meaning': 'mở', 'emoji': '📂'}, {'word': 'close', 'meaning': 'đóng', 'emoji': '📕'}, {'word': 'eat', 'meaning': 'ăn', 'emoji': '🍽️'}, {'word': 'drink', 'meaning': 'uống', 'emoji': '🥤'}, {'word': 'sleep', 'meaning': 'ngủ', 'emoji': '😴'}, {'word': 'study', 'meaning': 'học', 'emoji': '📚'}, {'word': 'read', 'meaning': 'đọc', 'emoji': '📖'}, {'word': 'write', 'meaning': 'viết', 'emoji': '✏️'}, {'word': 'listen', 'meaning': 'nghe', 'emoji': '👂'}, {'word': 'speak', 'meaning': 'nói', 'emoji': '🗣️'}, {'word': 'help', 'meaning': 'giúp đỡ', 'emoji': '🆘'}, {'word': 'wait', 'meaning': 'đợi', 'emoji': '⏳'}], '💖 Cảm xúc và cơ thể': [{'word': 'happy', 'meaning': 'vui vẻ', 'emoji': '😊'}, {'word': 'sad', 'meaning': 'buồn', 'emoji': '😢'}, {'word': 'angry', 'meaning': 'tức giận', 'emoji': '😠'}, {'word': 'tired', 'meaning': 'mệt', 'emoji': '🥱'}, {'word': 'hungry', 'meaning': 'đói', 'emoji': '😋'}, {'word': 'thirsty', 'meaning': 'khát', 'emoji': '🥤'}, {'word': 'sick', 'meaning': 'ốm', 'emoji': '🤒'}, {'word': 'okay', 'meaning': 'ổn', 'emoji': '👌'}, {'word': 'fine', 'meaning': 'khỏe, ổn', 'emoji': '🙂'}, {'word': 'cold', 'meaning': 'lạnh', 'emoji': '🥶'}, {'word': 'hot', 'meaning': 'nóng', 'emoji': '🥵'}, {'word': 'pain', 'meaning': 'đau', 'emoji': '🤕'}, {'word': 'headache', 'meaning': 'đau đầu', 'emoji': '🤯'}, {'word': 'stomachache', 'meaning': 'đau bụng', 'emoji': '🤢'}, {'word': 'fever', 'meaning': 'sốt', 'emoji': '🌡️'}, {'word': 'hurt', 'meaning': 'đau, bị thương', 'emoji': '🩹'}, {'word': 'good', 'meaning': 'tốt', 'emoji': '👍'}, {'word': 'bad', 'meaning': 'xấu, tệ', 'emoji': '👎'}, {'word': 'worried', 'meaning': 'lo lắng', 'emoji': '😟'}, {'word': 'scared', 'meaning': 'sợ', 'emoji': '😨'}], '🍎 Đồ ăn và nước uống': [{'word': 'food', 'meaning': 'thức ăn', 'emoji': '🍽️'}, {'word': 'water', 'meaning': 'nước', 'emoji': '💧'}, {'word': 'rice', 'meaning': 'cơm, gạo', 'emoji': '🍚'}, {'word': 'bread', 'meaning': 'bánh mì', 'emoji': '🍞'}, {'word': 'milk', 'meaning': 'sữa', 'emoji': '🥛'}, {'word': 'juice', 'meaning': 'nước ép', 'emoji': '🧃'}, {'word': 'coffee', 'meaning': 'cà phê', 'emoji': '☕'}, {'word': 'tea', 'meaning': 'trà', 'emoji': '🍵'}, {'word': 'apple', 'meaning': 'táo', 'emoji': '🍎'}, {'word': 'banana', 'meaning': 'chuối', 'emoji': '🍌'}, {'word': 'egg', 'meaning': 'trứng', 'emoji': '🥚'}, {'word': 'meat', 'meaning': 'thịt', 'emoji': '🥩'}, {'word': 'chicken', 'meaning': 'gà, thịt gà', 'emoji': '🍗'}, {'word': 'fish', 'meaning': 'cá', 'emoji': '🐟'}, {'word': 'breakfast', 'meaning': 'bữa sáng', 'emoji': '🍳'}, {'word': 'lunch', 'meaning': 'bữa trưa', 'emoji': '🍱'}, {'word': 'dinner', 'meaning': 'bữa tối', 'emoji': '🍽️'}, {'word': 'snack', 'meaning': 'đồ ăn nhẹ', 'emoji': '🍪'}, {'word': 'medicine', 'meaning': 'thuốc', 'emoji': '💊'}, {'word': 'hospital', 'meaning': 'bệnh viện', 'emoji': '🏥'}], '🚗 Địa điểm và di chuyển': [{'word': 'home', 'meaning': 'nhà', 'emoji': '🏠'}, {'word': 'school', 'meaning': 'trường học', 'emoji': '🏫'}, {'word': 'classroom', 'meaning': 'lớp học', 'emoji': '🧑\u200d🏫'}, {'word': 'bathroom', 'meaning': 'nhà vệ sinh', 'emoji': '🚻'}, {'word': 'hospital', 'meaning': 'bệnh viện', 'emoji': '🏥'}, {'word': 'store', 'meaning': 'cửa hàng', 'emoji': '🏪'}, {'word': 'station', 'meaning': 'nhà ga', 'emoji': '🚉'}, {'word': 'bus', 'meaning': 'xe buýt', 'emoji': '🚌'}, {'word': 'car', 'meaning': 'ô tô', 'emoji': '🚗'}, {'word': 'taxi', 'meaning': 'taxi', 'emoji': '🚕'}, {'word': 'train', 'meaning': 'tàu hỏa', 'emoji': '🚆'}, {'word': 'bike', 'meaning': 'xe đạp', 'emoji': '🚲'}, {'word': 'road', 'meaning': 'đường', 'emoji': '🛣️'}, {'word': 'street', 'meaning': 'phố', 'emoji': '🏙️'}, {'word': 'here', 'meaning': 'ở đây', 'emoji': '📍'}, {'word': 'there', 'meaning': 'ở đó', 'emoji': '📌'}, {'word': 'near', 'meaning': 'gần', 'emoji': '↔️'}, {'word': 'far', 'meaning': 'xa', 'emoji': '🌁'}, {'word': 'left', 'meaning': 'bên trái', 'emoji': '⬅️'}, {'word': 'right', 'meaning': 'bên phải, đúng', 'emoji': '➡️'}], '⏰ Thời gian và số': [{'word': 'time', 'meaning': 'thời gian', 'emoji': '⏰'}, {'word': 'now', 'meaning': 'bây giờ', 'emoji': '🕒'}, {'word': 'today', 'meaning': 'hôm nay', 'emoji': '📅'}, {'word': 'tomorrow', 'meaning': 'ngày mai', 'emoji': '➡️📅'}, {'word': 'yesterday', 'meaning': 'hôm qua', 'emoji': '⬅️📅'}, {'word': 'morning', 'meaning': 'buổi sáng', 'emoji': '🌅'}, {'word': 'afternoon', 'meaning': 'buổi chiều', 'emoji': '☀️'}, {'word': 'evening', 'meaning': 'buổi tối', 'emoji': '🌆'}, {'word': 'night', 'meaning': 'đêm', 'emoji': '🌙'}, {'word': 'early', 'meaning': 'sớm', 'emoji': '🐓'}, {'word': 'late', 'meaning': 'muộn', 'emoji': '🌃'}, {'word': 'one', 'meaning': 'một', 'emoji': '1️⃣'}, {'word': 'two', 'meaning': 'hai', 'emoji': '2️⃣'}, {'word': 'three', 'meaning': 'ba', 'emoji': '3️⃣'}, {'word': 'four', 'meaning': 'bốn', 'emoji': '4️⃣'}, {'word': 'five', 'meaning': 'năm', 'emoji': '5️⃣'}, {'word': 'six', 'meaning': 'sáu', 'emoji': '6️⃣'}, {'word': 'seven', 'meaning': 'bảy', 'emoji': '7️⃣'}, {'word': 'eight', 'meaning': 'tám', 'emoji': '8️⃣'}, {'word': 'ten', 'meaning': 'mười', 'emoji': '🔟'}], '🎒 Đồ vật và tiền': [{'word': 'bag', 'meaning': 'cặp, túi', 'emoji': '🎒'}, {'word': 'phone', 'meaning': 'điện thoại', 'emoji': '📱'}, {'word': 'book', 'meaning': 'sách', 'emoji': '📘'}, {'word': 'notebook', 'meaning': 'vở', 'emoji': '📓'}, {'word': 'pen', 'meaning': 'bút mực', 'emoji': '🖊️'}, {'word': 'pencil', 'meaning': 'bút chì', 'emoji': '✏️'}, {'word': 'desk', 'meaning': 'bàn học', 'emoji': '🪑'}, {'word': 'chair', 'meaning': 'ghế', 'emoji': '🪑'}, {'word': 'door', 'meaning': 'cửa', 'emoji': '🚪'}, {'word': 'window', 'meaning': 'cửa sổ', 'emoji': '🪟'}, {'word': 'key', 'meaning': 'chìa khóa', 'emoji': '🔑'}, {'word': 'money', 'meaning': 'tiền', 'emoji': '💵'}, {'word': 'card', 'meaning': 'thẻ', 'emoji': '💳'}, {'word': 'ticket', 'meaning': 'vé', 'emoji': '🎫'}, {'word': 'clothes', 'meaning': 'quần áo', 'emoji': '👕'}, {'word': 'shoes', 'meaning': 'giày', 'emoji': '👟'}, {'word': 'hat', 'meaning': 'mũ', 'emoji': '🧢'}, {'word': 'watch', 'meaning': 'đồng hồ', 'emoji': '⌚'}, {'word': 'cup', 'meaning': 'cốc', 'emoji': '☕'}, {'word': 'bottle', 'meaning': 'chai', 'emoji': '🍼'}], '🆘 Nhờ giúp đỡ': [{'word': 'help', 'meaning': 'giúp đỡ', 'emoji': '🆘'}, {'word': 'please', 'meaning': 'làm ơn', 'emoji': '🙏'}, {'word': 'sorry', 'meaning': 'xin lỗi', 'emoji': '🙇'}, {'word': 'excuse me', 'meaning': 'xin lỗi / làm phiền', 'emoji': '🙋'}, {'word': 'again', 'meaning': 'lại, lần nữa', 'emoji': '🔁'}, {'word': 'slowly', 'meaning': 'chậm rãi', 'emoji': '🐢'}, {'word': 'understand', 'meaning': 'hiểu', 'emoji': '💡'}, {'word': 'question', 'meaning': 'câu hỏi', 'emoji': '❓'}, {'word': 'problem', 'meaning': 'vấn đề', 'emoji': '⚠️'}, {'word': 'need', 'meaning': 'cần', 'emoji': '📌'}, {'word': 'want', 'meaning': 'muốn', 'emoji': '✨'}, {'word': 'know', 'meaning': 'biết', 'emoji': '🧠'}, {'word': 'say', 'meaning': 'nói', 'emoji': '💬'}, {'word': 'tell', 'meaning': 'nói, kể', 'emoji': '📣'}, {'word': 'ask', 'meaning': 'hỏi', 'emoji': '❔'}, {'word': 'answer', 'meaning': 'câu trả lời', 'emoji': '✅'}, {'word': 'repeat', 'meaning': 'lặp lại', 'emoji': '🔁'}, {'word': 'speak', 'meaning': 'nói', 'emoji': '🗣️'}, {'word': 'look', 'meaning': 'nhìn', 'emoji': '👀'}, {'word': 'listen', 'meaning': 'nghe', 'emoji': '👂'}]}
 
 
 # =========================================================
-# 베트남어 뜻 선택용 사전
-# =========================================================
-VI_MEANINGS = {"I": "tôi", "you": "bạn", "he": "anh ấy", "she": "cô ấy", "we": "chúng tôi", "they": "họ", "friend": "bạn bè", "teacher": "giáo viên", "student": "học sinh", "classmate": "bạn cùng lớp", "family": "gia đình", "father": "bố", "mother": "mẹ", "brother": "anh/em trai", "sister": "chị/em gái", "name": "tên", "person": "người", "man": "đàn ông", "woman": "phụ nữ", "child": "trẻ em", "go": "đi", "come": "đến", "walk": "đi bộ", "run": "chạy", "sit": "ngồi", "stand": "đứng", "stop": "dừng lại", "start": "bắt đầu", "open": "mở", "close": "đóng", "eat": "ăn", "drink": "uống", "sleep": "ngủ", "study": "học", "read": "đọc", "write": "viết", "listen": "nghe", "speak": "nói", "help": "giúp đỡ", "wait": "đợi", "happy": "vui vẻ", "sad": "buồn", "angry": "tức giận", "tired": "mệt", "hungry": "đói", "thirsty": "khát", "sick": "ốm", "okay": "ổn", "fine": "khỏe, ổn", "cold": "lạnh", "hot": "nóng", "pain": "đau", "headache": "đau đầu", "stomachache": "đau bụng", "fever": "sốt", "hurt": "đau, bị thương", "good": "tốt", "bad": "xấu, tệ", "worried": "lo lắng", "scared": "sợ", "food": "thức ăn", "water": "nước", "rice": "cơm, gạo", "bread": "bánh mì", "milk": "sữa", "juice": "nước ép", "coffee": "cà phê", "tea": "trà", "apple": "táo", "banana": "chuối", "egg": "trứng", "meat": "thịt", "chicken": "gà, thịt gà", "fish": "cá", "breakfast": "bữa sáng", "lunch": "bữa trưa", "dinner": "bữa tối", "snack": "đồ ăn nhẹ", "medicine": "thuốc", "hospital": "bệnh viện", "home": "nhà", "school": "trường học", "classroom": "lớp học", "bathroom": "nhà vệ sinh", "store": "cửa hàng", "station": "nhà ga", "bus": "xe buýt", "car": "ô tô", "taxi": "taxi", "train": "tàu hỏa", "bike": "xe đạp", "road": "đường", "street": "phố", "here": "ở đây", "there": "ở đó", "near": "gần", "far": "xa", "left": "bên trái", "right": "bên phải, đúng", "time": "thời gian", "now": "bây giờ", "today": "hôm nay", "tomorrow": "ngày mai", "yesterday": "hôm qua", "morning": "buổi sáng", "afternoon": "buổi chiều", "evening": "buổi tối", "night": "đêm", "early": "sớm", "late": "muộn", "one": "một", "two": "hai", "three": "ba", "four": "bốn", "five": "năm", "six": "sáu", "seven": "bảy", "eight": "tám", "ten": "mười", "bag": "cặp, túi", "phone": "điện thoại", "book": "sách", "notebook": "vở", "pen": "bút mực", "pencil": "bút chì", "desk": "bàn học", "chair": "ghế", "door": "cửa", "window": "cửa sổ", "key": "chìa khóa", "money": "tiền", "card": "thẻ", "ticket": "vé", "clothes": "quần áo", "shoes": "giày", "hat": "mũ", "watch": "đồng hồ", "cup": "cốc", "bottle": "chai", "please": "làm ơn", "sorry": "xin lỗi", "excuse me": "xin lỗi / làm phiền", "again": "lại, lần nữa", "slowly": "chậm rãi", "understand": "hiểu", "question": "câu hỏi", "problem": "vấn đề", "need": "cần", "want": "muốn", "know": "biết", "say": "nói", "tell": "nói, kể", "ask": "hỏi", "answer": "câu trả lời", "repeat": "lặp lại", "look": "nhìn"}
-
-# =========================================================
-# 상단 디자인
+# Header design
 # =========================================================
 st.markdown(
     """
@@ -243,15 +61,15 @@ st.markdown(
 st.markdown(
     """
     <div class="main-title-box">
-        <h1>🃏 생존 단어 카드 말하기 게임</h1>
-        <p>한국어 또는 베트남어 뜻을 보고 영어 단어를 말해 보세요. 발음 시험이 아니라 영어 단어를 알고 있는지 확인하는 활동입니다.</p>
+        <h1>🃏 Survival Word Card Speaking Game</h1>
+        <p>Nhìn nghĩa tiếng Việt và nói từ tiếng Anh. Đây không phải là bài kiểm tra phát âm, mà là hoạt động kiểm tra xem bạn có biết từ tiếng Anh hay không.</p>
     </div>
     """,
     unsafe_allow_html=True
 )
 
 # =========================================================
-# 말하기 카드 게임 컴포넌트
+# Speaking card game component
 # =========================================================
 def word_card_speaking_game(word_themes):
     items = []
@@ -259,7 +77,6 @@ def word_card_speaking_game(word_themes):
         for item in words:
             new_item = dict(item)
             new_item["cat"] = cat
-            new_item["meaning_vi"] = VI_MEANINGS.get(new_item.get("word", ""), new_item.get("meaning", ""))
             items.append(new_item)
 
     items_json = json.dumps(items, ensure_ascii=False)
@@ -292,7 +109,7 @@ def word_card_speaking_game(word_themes):
             }
 
             #cardBox::before {
-                content: "다음 단어";
+                content: "Từ tiếp theo";
                 position: absolute;
                 top: 18px;
                 left: 50%;
@@ -422,7 +239,7 @@ def word_card_speaking_game(word_themes):
         </style>
 
         <div id="topControlBox" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:18px;">
-            <label style="font-weight:900; color:#334155;">단어 범위 선택</label>
+            <label style="font-weight:900; color:#334155;">Chọn phạm vi từ</label>
             <select id="categorySelect" style="
                 padding: 10px 14px;
                 border-radius: 999px;
@@ -433,20 +250,6 @@ def word_card_speaking_game(word_themes):
                 background: white;
             "></select>
 
-            <label style="font-weight:900; color:#334155;">뜻 언어 선택</label>
-            <select id="languageSelect" style="
-                padding: 10px 14px;
-                border-radius: 999px;
-                border: 1.5px solid #ddd6fe;
-                font-size: 15px;
-                font-weight: 800;
-                color: #0f172a;
-                background: white;
-            ">
-                <option value="ko" selected>한국어 Korean</option>
-                <option value="vi">베트남어 Vietnamese</option>
-            </select>
-
             <button id="randomBtn" style="
                 border: 1.5px solid #c7d2fe;
                 background: white;
@@ -455,7 +258,7 @@ def word_card_speaking_game(word_themes):
                 padding: 10px 15px;
                 font-weight: 900;
                 cursor: pointer;
-            ">🎲 이 범위 섞기</button>
+            ">🎲 Xáo trộn phạm vi này</button>
 
             <button id="resetBtn" style="
                 border: 1.5px solid #fed7aa;
@@ -465,7 +268,7 @@ def word_card_speaking_game(word_themes):
                 padding: 10px 15px;
                 font-weight: 900;
                 cursor: pointer;
-            ">🔄 다시 시작</button>
+            ">🔄 Bắt đầu lại</button>
         </div>
 
         <div id="gameArea">
@@ -479,7 +282,7 @@ def word_card_speaking_game(word_themes):
                     font-size:15px;
                     font-weight:900;
                     border:1px solid #bbf7d0;
-                ">정답 0 / 0 · 연습 필요 단어 0</div>
+                ">Đúng 0 / 0 · Từ cần luyện 0</div>
             </div>
 
             <div id="cardBox" style="
@@ -503,7 +306,7 @@ def word_card_speaking_game(word_themes):
                     font-size:14px;
                     font-weight:900;
                     margin-bottom:14px;
-                "><span id="meaningLangLabel">한국어 뜻</span></div>
+                "><span id="meaningLangLabel">Nghĩa tiếng Việt</span></div>
 
                 <div id="meaningBox" style="
                     font-size: 44px;
@@ -511,7 +314,7 @@ def word_card_speaking_game(word_themes):
                     color: #111827;
                     line-height: 1.35;
                     margin-bottom: 16px;
-                ">뜻</div>
+                ">Nghĩa</div>
 
                 <div id="answerBox" style="
                     display:none;
@@ -559,7 +362,7 @@ def word_card_speaking_game(word_themes):
                     min-height:58px;
                     white-space:nowrap;
                     box-shadow:0 3px 9px rgba(0,0,0,0.05);
-                ">🎙️ 말하기</button>
+                ">🎙️ Nói tiếng Anh</button>
 
                 <div id="transcriptMiniBox" style="
                     width:100%;
@@ -573,7 +376,7 @@ def word_card_speaking_game(word_themes):
                     justify-content:center;
                     overflow:hidden;
                 ">
-                    <div id="transcriptMiniLabel" style="font-size:13px; color:#64748b; font-weight:900; margin-bottom:5px; white-space:nowrap;">인식된 단어</div>
+                    <div id="transcriptMiniLabel" style="font-size:13px; color:#64748b; font-weight:900; margin-bottom:5px; white-space:nowrap;">Từ được nhận diện</div>
                     <div id="transcriptBox" style="font-size:22px; font-weight:900; color:#334155; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
                 </div>
 
@@ -594,7 +397,7 @@ def word_card_speaking_game(word_themes):
                         font-size:14px;
                         min-height:46px;
                         white-space:nowrap;
-                    ">💡 힌트</button>
+                    ">💡 Gợi ý</button>
 
                     <button id="answerBtn" style="
                         border:1.5px solid #bfdbfe;
@@ -607,7 +410,7 @@ def word_card_speaking_game(word_themes):
                         font-size:14px;
                         min-height:46px;
                         white-space:nowrap;
-                    ">👀 정답+🔊</button>
+                    ">👀 Đáp án+🔊</button>
 
                     <button id="skipBtn" style="
                         border:1.5px solid #c7d2fe;
@@ -620,7 +423,7 @@ def word_card_speaking_game(word_themes):
                         font-size:14px;
                         min-height:46px;
                         white-space:nowrap;
-                    ">➡️ 다음</button>
+                    ">➡️ Tiếp theo</button>
                 </div>
             </div>
 
@@ -651,13 +454,13 @@ def word_card_speaking_game(word_themes):
                 font-weight:900;
                 color:#14532d;
                 margin-bottom:10px;
-            ">범위 완료!</div>
+            ">Hoàn thành phạm vi!</div>
             <div id="finishScore" style="
                 font-size:24px;
                 font-weight:900;
                 color:#166534;
                 margin-bottom:18px;
-            ">정답 0 / 0 · 못 말한 단어 0</div>
+            ">Đúng 0 / 0 · Từ cần luyện 0</div>
             <button id="finishRetryBtn" style="
                 border:1.5px solid #a7f3d0;
                 background:#ecfdf5;
@@ -667,7 +470,7 @@ def word_card_speaking_game(word_themes):
                 font-weight:900;
                 cursor:pointer;
                 font-size:17px;
-            ">🔁 다시 풀기</button>
+            ">🔁 Làm lại</button>
         </div>
     </div>
 
@@ -682,7 +485,6 @@ def word_card_speaking_game(word_themes):
     let finished = false;
 
     const categorySelect = document.getElementById("categorySelect");
-    const languageSelect = document.getElementById("languageSelect");
     const meaningLangLabel = document.getElementById("meaningLangLabel");
     const randomBtn = document.getElementById("randomBtn");
     const resetBtn = document.getElementById("resetBtn");
@@ -722,7 +524,7 @@ def word_card_speaking_game(word_themes):
         micBtn.disabled = false;
         micBtn.style.opacity = "1";
         micBtn.style.cursor = "pointer";
-        micBtn.innerText = "🎙️ 말하기";
+        micBtn.innerText = "🎙️ Nói tiếng Anh";
     }
 
     function cleanupRecognition() {
@@ -787,18 +589,8 @@ def word_card_speaking_game(word_themes):
         return copied;
     }
 
-    function hasKorean(text) {
-        return /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(String(text || ""));
-    }
-
     function hasEnglishLetters(text) {
         return /[a-zA-Z]/.test(String(text || ""));
-    }
-
-    function isKoreanOnlyWithoutEnglishClue(text) {
-        const raw = String(text || "").trim();
-        if (!raw) return false;
-        return hasKorean(raw) && !hasEnglishLetters(raw);
     }
 
     function normalizeText(text) {
@@ -961,7 +753,7 @@ def word_card_speaking_game(word_themes):
             "phone": ["phone", "fone", "pon"],
             "coffee": ["coffee", "coffe", "copy"],
             "please": ["please", "plz", "plis", "place"],
-            "go": ["go", "goal", "고"],
+            "go": ["go", "goal"],
             "come": ["come", "com", "gum"],
             "run": ["run", "ran", "learn"],
             "sit": ["sit", "seat", "set"],
@@ -1010,8 +802,8 @@ def word_card_speaking_game(word_themes):
             "answer": ["answer", "anser", "andser"],
             "again": ["again", "agen", "agein"],
             "slowly": ["slowly", "slowli", "slowy"],
-            "water": ["water", "wader", "워터"],
-            "school": ["school", "skool", "스쿨"],
+            "water": ["water", "wader"],
+            "school": ["school", "skool"],
             "home": ["home", "holm"],
             "food": ["food", "fud", "put"],
             "rice": ["rice", "rise", "lice"],
@@ -1097,8 +889,7 @@ def word_card_speaking_game(word_themes):
         const sameFirst = sw.charAt(0) === aw.charAt(0);
         const sameLast = sw.charAt(sw.length - 1) === aw.charAt(aw.length - 1);
 
-        // 생존 단어 목록 안의 다른 단어라도, bike/back처럼 ASR 오인식 가능성이 있으면 막지 않습니다.
-        // 다만 water → student처럼 완전히 다른 생존 단어는 오답 처리합니다.
+        // Allow possible ASR misrecognitions such as bike/back, but reject clearly different known words.
         return !(sameFirst || sameLast || sim >= 0.45 || soundSim >= 0.36 || hasSharedBigram(sw, aw));
     }
 
@@ -1112,15 +903,10 @@ def word_card_speaking_game(word_themes):
         if (sw === aw) return true;
         if (aliasMatch(sw, aw)) return true;
 
-        // 한국어만 인식된 경우는 기본적으로 오답 처리합니다.
-        // 다만 브라우저가 영어 발음을 한글 소리로 잡는 일부 경우(예: go→고, water→워터, school→스쿨)는
-        // 위의 aliasMatch에서 먼저 통과되므로 너무 인색하게 막지 않습니다.
-        if (isKoreanOnlyWithoutEnglishClue(spokenWord)) return false;
-
-        // I / you / he / she / we / they는 의미가 크게 바뀌므로 대명사끼리 다르면 오답
+        // Pronouns change meaning significantly, so different pronouns are incorrect.
         if (clearlyWrongPronoun(sw, aw)) return false;
 
-        // 아예 다른 생존 단어를 말한 경우는 오답
+        // Clearly different known words are incorrect.
         if (isClearlyDifferentKnownWord(sw, aw)) return false;
 
         const dist = editDistance(sw, aw);
@@ -1160,20 +946,19 @@ def word_card_speaking_game(word_themes):
 
         if (!hasAnyClue) return false;
 
-        // 한 단어 인식에서 브라우저가 앞뒤에 붙이거나 일부만 잡은 경우 허용
+        // Allow partial or extra recognition around one-word answers.
         if (aw.length >= 4 && sw.length >= 2 && (aw.includes(sw) || sw.includes(aw))) return true;
 
-        // 자음 뼈대가 같거나 거의 같으면 단어를 안 것으로 처리
+        // Accept if the consonant-like sound pattern is the same or nearly the same.
         if (soundSw && soundAw && soundSw === soundAw) return true;
         if (soundSw && soundAw && soundDist <= 2 && soundSim >= 0.25) return true;
 
-        // 1~2글자 단어: alias 중심이지만 너무 딱딱하지 않게 처리
+        // 1-2 letter words: alias-based, but not too strict.
         if (aw.length <= 2) {
             return sim >= 0.55 || soundSim >= 0.35 || sameFirst || sameLast;
         }
 
-        // 3~4글자 단어: 가장 관대하게 처리
-        // 목적은 발음 평가가 아니라 단어 인지 확인
+        // 3-4 letter words: lenient because this checks word recognition, not pronunciation.
         if (aw.length <= 4) {
             return (
                 dist <= 2 ||
@@ -1188,7 +973,7 @@ def word_card_speaking_game(word_themes):
             );
         }
 
-        // 5~6글자 단어
+        // 5-6 letter words
         if (aw.length <= 6) {
             return (
                 dist <= 4 ||
@@ -1203,7 +988,7 @@ def word_card_speaking_game(word_themes):
             );
         }
 
-        // 7글자 이상 긴 단어
+        // 7+ letter words
         return (
             dist <= 6 ||
             sim >= 0.30 ||
@@ -1233,19 +1018,19 @@ def word_card_speaking_game(word_themes):
         if (answerWords.length === 1) {
             const target = answerWords[0];
 
-            // 전체 인식 문장이 비슷하면 정답
+            // If the whole recognized phrase is similar, accept it.
             if (isUnderstandableWord(s, target)) return true;
 
-            // 인식 후보 단어 중 하나라도 정답과 비슷하면 정답
+            // If any recognized candidate word is similar to the answer, accept it.
             for (const sw of spokenWords) {
                 if (isUnderstandableWord(sw, target)) return true;
             }
 
-            // "bath room", "class room"처럼 분리되거나 붙는 경우 대비
+            // Handle split or joined forms such as "bath room" and "class room".
             const joinedSpoken = spokenWords.join("");
             if (isUnderstandableWord(joinedSpoken, target)) return true;
 
-            // 앞뒤에 please, uh, a, the 같은 말이 붙어도 핵심 단어만 맞으면 통과
+            // Accept if the key word is correct even with fillers like please, uh, a, the.
             const fillerRemoved = spokenWords.filter(w =>
                 !["a", "an", "the", "uh", "um", "please", "yes", "no"].includes(w)
             );
@@ -1262,7 +1047,7 @@ def word_card_speaking_game(word_themes):
 
         if (s.includes(a)) return true;
 
-        // 두 단어 이상 표현: 순서대로 핵심 단어가 비슷하게 잡히면 정답
+        // For multi-word expressions, accept if key words are recognized in order.
         let pos = 0;
         for (const sw of spokenWords) {
             const target = answerWords[pos];
@@ -1274,7 +1059,7 @@ def word_card_speaking_game(word_themes):
             if (pos >= answerWords.length) break;
         }
 
-        // excuse me처럼 짧은 두 단어 표현은 붙어서 인식되는 경우도 허용
+        // Allow short expressions like excuse me to be recognized as joined words.
         if (pos < answerWords.length) {
             const joinedSpoken = spokenWords.join("");
             const joinedAnswer = answerWords.join("");
@@ -1334,7 +1119,7 @@ def word_card_speaking_game(word_themes):
 
                 if (!bestTranscript) bestTranscript = candidate;
 
-                // 정답 판정이 되는 후보가 있으면 final을 기다리지 않고 바로 선택
+                // If a correct candidate appears, choose it immediately without waiting for final.
                 if (isCorrectSpeech(candidate, answer)) {
                     return {
                         transcript: candidate,
@@ -1380,7 +1165,7 @@ def word_card_speaking_game(word_themes):
         const list = getFilteredItems();
         const correctCount = countCorrectInCurrentRange();
         const missedCount = countMissedInCurrentRange();
-        scoreLabel.innerText = "정답 " + correctCount + " / " + list.length + " · 연습 필요 단어 " + missedCount;
+        scoreLabel.innerText = "Đúng " + correctCount + " / " + list.length + " · Từ cần luyện " + missedCount;
     }
 
     function speak(text) {
@@ -1412,7 +1197,7 @@ def word_card_speaking_game(word_themes):
         const correctCount = countCorrectInCurrentRange();
         const missedCount = countMissedInCurrentRange();
 
-        finishScore.innerText = "정답 " + correctCount + " / " + list.length + " · 연습 필요 단어 " + missedCount;
+        finishScore.innerText = "Đúng " + correctCount + " / " + list.length + " · Từ cần luyện " + missedCount;
 
         gameArea.style.display = "none";
         finishBox.style.display = "block";
@@ -1421,14 +1206,12 @@ def word_card_speaking_game(word_themes):
 
     function getDisplayMeaning(item) {
         if (!item) return "";
-        const lang = languageSelect ? languageSelect.value : "ko";
-        if (lang === "vi") return item.meaning_vi || item.meaning || "";
         return item.meaning || "";
     }
 
     function updateMeaningLanguageLabel() {
-        if (!meaningLangLabel || !languageSelect) return;
-        meaningLangLabel.innerText = languageSelect.value === "vi" ? "베트남어 뜻" : "한국어 뜻";
+        if (!meaningLangLabel) return;
+        meaningLangLabel.innerText = "Nghĩa tiếng Việt";
     }
 
     function loadQuestion(index = 0) {
@@ -1455,7 +1238,7 @@ def word_card_speaking_game(word_themes):
         answerBox.style.background = "#ecfdf5";
         answerBox.style.borderColor = "#bbf7d0";
         answerBox.style.color = "#166534";
-        answerBox.innerText = "정답: " + currentItem.word;
+        answerBox.innerText = "Đáp án: " + currentItem.word;
 
         hintBox.style.display = "none";
         hintBox.innerText = "";
@@ -1493,7 +1276,7 @@ def word_card_speaking_game(word_themes):
             answerBox.style.display = "none";
             transcriptBox.innerHTML =
                 "<span style='color:#334155;'>" + escapeHtml(currentItem.word) + "</span>" +
-                " <span style='display:inline-block; margin-left:8px; padding:4px 9px; border-radius:999px; background:#dcfce7; color:#166534; border:1px solid #bbf7d0; font-size:0.82em; font-weight:900; vertical-align:middle;'>✅ 정답입니다</span>";
+                " <span style='display:inline-block; margin-left:8px; padding:4px 9px; border-radius:999px; background:#dcfce7; color:#166534; border:1px solid #bbf7d0; font-size:0.82em; font-weight:900; vertical-align:middle;'>✅ Đúng rồi</span>";
             transcriptBox.style.color = "#334155";
 
             resultBox.innerText = "";
@@ -1505,7 +1288,7 @@ def word_card_speaking_game(word_themes):
             answerBox.style.display = "none";
             transcriptBox.style.color = "#334155";
             resultBox.style.display = "block";
-            resultBox.innerText = "완전히 다른 단어가 아니면 비슷한 발음도 정답으로 인정됩니다. 다시 한 번 말해 보세요.";
+            resultBox.innerText = "Nếu không phải là từ hoàn toàn khác, phát âm gần đúng cũng được chấp nhận. Hãy nói lại một lần nữa.";
             resultBox.style.background = "#fff7ed";
             resultBox.style.borderColor = "#fed7aa";
             resultBox.style.color = "#92400e";
@@ -1514,7 +1297,7 @@ def word_card_speaking_game(word_themes):
 
     async function startRecognition() {
         if (!SpeechRecognition) {
-            resultBox.innerText = "이 브라우저에서는 음성 인식을 사용할 수 없습니다. Chrome에서 실행해 보세요.";
+            resultBox.innerText = "Trình duyệt này không hỗ trợ nhận diện giọng nói. Hãy thử dùng Chrome.";
             resultBox.style.display = "block";
             resultBox.style.background = "#fef2f2";
             resultBox.style.borderColor = "#fecaca";
@@ -1542,7 +1325,7 @@ def word_card_speaking_game(word_themes):
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 stream.getTracks().forEach(function(track) { track.stop(); });
             } catch (err) {
-                resultBox.innerText = "마이크 권한을 허용한 뒤 다시 눌러 주세요.";
+                resultBox.innerText = "Cho phép quyền micro rồi bấm lại.";
                 resultBox.style.display = "block";
                 resultBox.style.background = "#fef2f2";
                 resultBox.style.borderColor = "#fecaca";
@@ -1567,7 +1350,7 @@ def word_card_speaking_game(word_themes):
         micBtn.disabled = true;
         micBtn.style.opacity = "0.72";
         micBtn.style.cursor = "wait";
-        micBtn.innerText = "🎙️ 듣는 중...";
+        micBtn.innerText = "🎙️ Đang nghe...";
 
         resultBox.innerText = "";
         resultBox.style.display = "none";
@@ -1589,8 +1372,7 @@ def word_card_speaking_game(word_themes):
             transcriptBox.style.color = "#334155";
             transcriptBox.innerText = bestTranscript;
 
-            // 정답 후보가 나오면 final을 기다리지 않고 바로 채점
-            // final이 오면 그때도 채점
+            // Check immediately when a correct candidate appears; also check when final arrives.
             if (picked.isCorrectCandidate || picked.hasFinal) {
                 checkSpeech(bestTranscript);
             }
@@ -1600,19 +1382,19 @@ def word_card_speaking_game(word_themes):
             if (thisRunId !== recognitionRunId) return;
 
             if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-                resultBox.innerText = "마이크 권한을 허용해 주세요.";
+                resultBox.innerText = "Vui lòng cho phép dùng micro.";
                 resultBox.style.display = "block";
                 resultBox.style.background = "#fef2f2";
                 resultBox.style.borderColor = "#fecaca";
                 resultBox.style.color = "#991b1b";
             } else if (event.error === "no-speech") {
-                resultBox.innerText = "소리가 인식되지 않았습니다. 다시 눌러 주세요.";
+                resultBox.innerText = "Không nhận diện được âm thanh. Hãy bấm lại.";
                 resultBox.style.display = "block";
                 resultBox.style.background = "#f8fafc";
                 resultBox.style.borderColor = "#e2e8f0";
                 resultBox.style.color = "#334155";
             } else {
-                resultBox.innerText = "다시 눌러 주세요.";
+                resultBox.innerText = "Hãy bấm lại.";
                 resultBox.style.display = "block";
                 resultBox.style.background = "#f8fafc";
                 resultBox.style.borderColor = "#e2e8f0";
@@ -1641,7 +1423,7 @@ def word_card_speaking_game(word_themes):
         try {
             recognition.start();
         } catch (err) {
-            resultBox.innerText = "다시 눌러 주세요.";
+            resultBox.innerText = "Hãy bấm lại.";
             resultBox.style.display = "block";
             resultBox.style.background = "#f8fafc";
             resultBox.style.borderColor = "#e2e8f0";
@@ -1673,13 +1455,6 @@ def word_card_speaking_game(word_themes):
         updateScore();
     });
 
-    languageSelect.addEventListener("change", function() {
-        updateMeaningLanguageLabel();
-        if (currentItem) {
-            meaningBox.innerText = getDisplayMeaning(currentItem);
-        }
-    });
-
     randomBtn.addEventListener("click", function() {
         cleanupRecognition();
         currentList = shuffleArray(getFilteredItems());
@@ -1698,11 +1473,11 @@ def word_card_speaking_game(word_themes):
         answerBox.style.background = "#ecfdf5";
         answerBox.style.borderColor = "#bbf7d0";
         answerBox.style.color = "#166534";
-        answerBox.innerText = "정답: " + currentItem.word;
+        answerBox.innerText = "Đáp án: " + currentItem.word;
         speak(currentItem.word);
 
         resultBox.style.display = "block";
-        resultBox.innerText = "듣고 다시 말해 보세요.";
+        resultBox.innerText = "Nghe và nói lại.";
         resultBox.style.background = "#eff6ff";
         resultBox.style.borderColor = "#bfdbfe";
         resultBox.style.color = "#1d4ed8";
@@ -1715,7 +1490,7 @@ def word_card_speaking_game(word_themes):
         const firstTwo = noSpaceWord.length <= 2 ? noSpaceWord : noSpaceWord.slice(0, 2);
 
         hintBox.style.display = "block";
-        hintBox.innerText = "힌트: " + firstTwo + "...";
+        hintBox.innerText = "Gợi ý: " + firstTwo + "...";
     });
 
     skipBtn.addEventListener("click", function() {
