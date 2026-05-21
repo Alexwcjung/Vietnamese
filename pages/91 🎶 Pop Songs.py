@@ -135,21 +135,17 @@ def try_translate_ko_to_en(korean_text):
         )
 
 # =========================================================
-# 한국어 / 베트남어 학습 보조 언어 선택 기능
+# 베트남어 전용 학습 보조 언어 기능
 # - 영어 원문은 그대로 둡니다.
-# - 베트남어를 선택하면 가사 해석, 배경학습, 퀴즈, Key Expression,
-#   문장 매칭, 생각 적기 질문, 피드백이 베트남어로 표시됩니다.
+# - 한국어 해석/설명/질문 데이터는 화면에 표시하기 전에 베트남어로 바꿉니다.
+# - 번역 서비스가 실패해도 한국어가 화면에 남지 않도록 베트남어 안내문을 보여줍니다.
 # =========================================================
-LANG_KO = "한국어 Korean"
 LANG_VI = "베트남어 Vietnamese"
 
 
 @st.cache_data(show_spinner=False)
-def translate_ko_to_vi_cached_v2(text):
-    """
-    한국어 설명/해석/질문을 베트남어로 바꿉니다.
-    베트남어 모드에서 한국어가 그대로 남지 않도록 여러 번역 방법을 순서대로 시도합니다.
-    """
+def translate_ko_to_vi_cached_v3(text):
+    """한국어 설명/해석/질문을 베트남어로 바꿉니다."""
     text = str(text).strip()
     if not text:
         return ""
@@ -199,46 +195,28 @@ def translate_ko_to_vi_cached_v2(text):
     except Exception:
         pass
 
-    # 번역 서비스가 모두 막힌 경우에만 원문 유지
-    # 이 경우 앱이 멈추지는 않지만, requirements와 인터넷 연결을 확인해야 합니다.
-    return text
+    return "Bản dịch tiếng Việt chưa được tạo. Hãy kiểm tra kết nối dịch hoặc requirements.txt."
 
 
 def translate_ko_to_vi_cached(text):
-    # 이전 캐시 결과가 남아 한국어가 계속 보이는 것을 피하기 위한 v2 래퍼입니다.
-    return translate_ko_to_vi_cached_v2(text)
-
-
-def get_support_language():
-    return st.session_state.get("support_language", LANG_KO)
-
-
-def is_vietnamese_mode():
-    return get_support_language() == LANG_VI
+    return translate_ko_to_vi_cached_v3(text)
 
 
 def ui_text_ko_vi(text):
-    """현재 선택 언어에 맞게 한국어 텍스트를 표시합니다."""
-    text = str(text)
-    if is_vietnamese_mode():
-        return translate_ko_to_vi_cached(text)
-    return text
+    """베트남어 전용 표시 함수입니다. 영어 원문은 그대로, 한국어는 베트남어로 표시합니다."""
+    return translate_ko_to_vi_cached(str(text))
 
 
 def ui_label(ko_text, vi_text):
-    """고정 UI 문구용 라벨입니다."""
-    return vi_text if is_vietnamese_mode() else ko_text
+    """고정 UI 문구는 베트남어만 표시합니다."""
+    return vi_text
 
 
 def make_feedback_for_selected_language(song_title, question, student_answer):
     ko_feedback, en_feedback, advice = make_polished_feedback(song_title, question, student_answer)
-
-    if is_vietnamese_mode():
-        vi_feedback = translate_ko_to_vi_cached(ko_feedback)
-        vi_advice = translate_ko_to_vi_cached(advice)
-        return vi_feedback, en_feedback, vi_advice
-
-    return ko_feedback, en_feedback, advice
+    vi_feedback = translate_ko_to_vi_cached(ko_feedback)
+    vi_advice = translate_ko_to_vi_cached(advice)
+    return vi_feedback, en_feedback, vi_advice
 
 def make_polished_feedback(song_title, question, student_answer):
     answer = str(student_answer).strip()
@@ -2070,31 +2048,25 @@ def show_background(song_choice, data):
 if "selected_song" not in st.session_state:
     st.session_state.selected_song = list(SONGS.keys())[0]
 if "current_tab" not in st.session_state:
-    st.session_state.current_tab = "🎬 배경 학습"
+    st.session_state.current_tab = "🎬 Bối cảnh"
 
 def sync_song():
     for k in list(st.session_state.keys()):
         if k.startswith(("quiz_", "keygame_", "match_", "reflect_")):
             del st.session_state[k]
 
-st.markdown('<div class="main-title"><h1>🎵 Pop Song English Learning</h1></div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title"><h1>🎵 Pop Song English Learning · Vietnamese Mode</h1></div>', unsafe_allow_html=True)
+st.caption("Vietnamese mode: English lyrics remain in English. Explanations, translations, questions, matching cards, and feedback are shown in Vietnamese.")
 song_options = list(SONGS.keys())
-song_choice = st.selectbox("👉 학습할 노래를 선택하세요", song_options, index=song_options.index(st.session_state.selected_song) if st.session_state.selected_song in song_options else 0, on_change=sync_song, key="song_selector")
+song_choice = st.selectbox("👉 Chọn bài hát để học", song_options, index=song_options.index(st.session_state.selected_song) if st.session_state.selected_song in song_options else 0, on_change=sync_song, key="song_selector")
 st.session_state.selected_song = song_choice
-
-st.radio(
-    "🌐 해석 / 활동 언어 선택",
-    [LANG_KO, LANG_VI],
-    horizontal=True,
-    key="support_language"
-)
 
 data = SONGS[song_choice]
 
-tabs_list = ["🎬 배경 학습", "📖 가사 & 퀴즈", "📝 Key Expression 뜻 맞추기", "🧩 문장 매칭 게임", "✍️ 생각 적기"]
-selected_tab = st.radio("학습 단계", tabs_list, horizontal=True, key="current_tab")
+tabs_list = ["🎬 Bối cảnh", "📖 Lời bài hát & Quiz", "📝 Key Expressions", "🧩 Ghép câu", "✍️ Viết suy nghĩ"]
+selected_tab = st.radio("Bước học", tabs_list, horizontal=True, key="current_tab")
 
-if selected_tab == "🎬 배경 학습":
+if selected_tab == "🎬 Bối cảnh":
     show_background(song_choice, data)
     st.video(data["video_url"])
     st.markdown(
@@ -2109,8 +2081,8 @@ if selected_tab == "🎬 배경 학습":
     )
 
 
-elif selected_tab == "📖 가사 & 퀴즈":
-    st.subheader("🎬 노래 영상")
+elif selected_tab == "📖 Lời bài hát & Quiz":
+    st.subheader("🎬 Video bài hát")
     st.video(data["video_url"])
     st.markdown("---")
     st.subheader(ui_label("📖 전체 가사와 한국어 해석", "📖 Toàn bộ lời bài hát và bản dịch tiếng Việt"))
@@ -2162,8 +2134,8 @@ elif selected_tab == "📖 가사 & 퀴즈":
                     unsafe_allow_html=True
                 )
 
-elif selected_tab == "📝 Key Expression 뜻 맞추기":
-    st.subheader(ui_label("📝 Key Expression 뜻 맞추기", "📝 Luyện nghĩa của Key Expressions"))
+elif selected_tab == "📝 Key Expressions":
+    st.subheader(ui_label("📝 Key Expressions", "📝 Luyện nghĩa của Key Expressions"))
     st.markdown(
         f'<div class="game-card"><div class="big-guide">'
         f'{ui_label("영어 표현을 보고 한국어 뜻을 고르는 문제와, 한국어 뜻을 보고 영어 표현을 고르는 문제가 섞여 나옵니다.", "Bài tập sẽ trộn giữa dạng nhìn biểu thức tiếng Anh chọn nghĩa tiếng Việt và nhìn nghĩa tiếng Việt chọn biểu thức tiếng Anh.")}<br>'
@@ -2278,7 +2250,7 @@ elif selected_tab == "📝 Key Expression 뜻 맞추기":
                 )
 
 
-elif selected_tab == "🧩 문장 매칭 게임":
+elif selected_tab == "🧩 Ghép câu":
     match_key = safe_key(song_choice)
 
     pairs = [
@@ -2711,7 +2683,7 @@ elif selected_tab == "🧩 문장 매칭 게임":
         scrolling=True
     )
     
-elif selected_tab == "✍️ 생각 적기":
+elif selected_tab == "✍️ Viết suy nghĩ":
     st.subheader(ui_label("✍️ 생각 적기: Reflective Writing", "✍️ Viết suy nghĩ: Reflective Writing"))
     st.markdown(
         f'<div class="game-card"><div class="big-guide">'
