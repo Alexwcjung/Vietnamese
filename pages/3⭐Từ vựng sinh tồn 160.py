@@ -390,20 +390,20 @@ def play_audio_block(text, label="🔊 Listen", show_link=True, key=None):
                 st.link_button("🔊 Listen in new window", make_google_tts_url(text, lang="en"), use_container_width=True)
 
 
-def direct_audio_player(text, show_link=True):
-    """Word-card audio player."""
+def direct_audio_player(text, show_link=True, lang="en"):
+    """Word-card audio player. Supports English and Vietnamese TTS."""
     text = str(text).strip()
     if not text:
         return
 
     try:
-        audio_bytes = get_tts_mp3_bytes(text, lang="en")
+        audio_bytes = get_tts_mp3_bytes(text, lang=lang)
         st.audio(audio_bytes, format="audio/mp3")
     except Exception as e:
         st.error("Could not create audio.")
         st.caption(f"Error: {e}")
         if show_link:
-            st.link_button("🔊 Listen in new window", make_google_tts_url(text, lang="en"), use_container_width=True)
+            st.link_button("🔊 Listen in new window", make_google_tts_url(text, lang=lang), use_container_width=True)
 
 
 # =========================
@@ -868,8 +868,8 @@ def get_word_emoji(word):
 
 # =========================
 # =========================
-def audio_button(label, text, key=None):
-    direct_audio_player(text)
+def audio_button(label, text, key=None, lang="en"):
+    direct_audio_player(text, lang=lang)
 
 
 def html_dialogue_audio_player(label, dialogue_lines, line_pause_ms=1400, height=105):
@@ -1431,7 +1431,7 @@ def show_word_cards(theme_words, theme_name):
 
         st.markdown('<div class="word-card">', unsafe_allow_html=True)
 
-        col1, col2, col3, col4, col5 = st.columns([1.25, 1.05, 0.35, 1.65, 1.25])
+        col1, col2, col3, col4, col5, col6 = st.columns([1.20, 1.05, 0.32, 1.30, 1.30, 1.10])
 
         with col1:
             st.markdown(
@@ -1457,13 +1457,24 @@ def show_word_cards(theme_words, theme_name):
             )
 
         with col4:
+            st.caption("🇺🇸 English")
             audio_button(
                 "🔊 Listen",
                 word,
-                key=f"{theme_name}_learn_audio_{idx}"
+                key=f"{theme_name}_learn_audio_{idx}",
+                lang="en"
             )
 
         with col5:
+            st.caption("🇻🇳 Tiếng Việt")
+            audio_button(
+                "🔊 Nghe",
+                meaning,
+                key=f"{theme_name}_vi_audio_{idx}",
+                lang="vi"
+            )
+
+        with col6:
             review_checked = st.checkbox(
                 "Review List",
                 value=checked,
@@ -1691,7 +1702,7 @@ def show_unknown_words_tab():
 
         st.markdown('<div class="word-card">', unsafe_allow_html=True)
 
-        col1, col2, col3, col4, col5 = st.columns([1.25, 1.05, 0.35, 1.65, 1.25])
+        col1, col2, col3, col4, col5, col6 = st.columns([1.20, 1.05, 0.32, 1.30, 1.30, 1.10])
 
         with col1:
             st.markdown(
@@ -1717,13 +1728,24 @@ def show_unknown_words_tab():
             )
 
         with col4:
+            st.caption("🇺🇸 English")
             audio_button(
                 "🔊 Listen",
                 word,
-                key=f"unknown_word_audio_{idx}_{word}"
+                key=f"unknown_word_audio_{idx}_{word}",
+                lang="en"
             )
 
         with col5:
+            st.caption("🇻🇳 Tiếng Việt")
+            audio_button(
+                "🔊 Nghe",
+                meaning,
+                key=f"unknown_word_vi_audio_{idx}_{word}",
+                lang="vi"
+            )
+
+        with col6:
             if st.button("Delete", key=f"delete_unknown_{idx}_{word}", use_container_width=True):
                 remove_unknown_word(word)
 
