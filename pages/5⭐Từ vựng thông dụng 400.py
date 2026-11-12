@@ -407,20 +407,20 @@ def play_audio_block(text, label="🔊 Nghe", show_link=True, key=None):
                 st.link_button("🔊 Nghe trong cửa sổ mới", make_google_tts_url(text, lang="en"), use_container_width=True)
 
 
-def direct_audio_player(text, show_link=True):
+def direct_audio_player(text, show_link=True, lang="en"):
     """단어 카드용: 오디오 플레이어를 바로 보여줍니다."""
     text = str(text).strip()
     if not text:
         return
 
     try:
-        audio_bytes = get_tts_mp3_bytes(text, lang="en")
+        audio_bytes = get_tts_mp3_bytes(text, lang=lang)
         st.audio(audio_bytes, format="audio/mp3")
     except Exception as e:
         st.error("Không tạo được tệp âm thanh.")
         st.caption(f"Chi tiết lỗi: {e}")
         if show_link:
-            st.link_button("🔊 Nghe trong cửa sổ mới", make_google_tts_url(text, lang="en"), use_container_width=True)
+            st.link_button("🔊 Nghe trong cửa sổ mới", make_google_tts_url(text, lang=lang), use_container_width=True)
 
 
 def get_word_emoji(word):
@@ -602,9 +602,9 @@ def clear_review_checkbox_keys():
 # =========================
 # 단어·대화 오디오
 # =========================
-def audio_button(label, text, key=None):
+def audio_button(label, text, key=None, lang="en"):
     # 버튼을 한 번 더 거치지 않고 오디오 플레이어를 바로 보여줍니다.
-    direct_audio_player(text)
+    direct_audio_player(text, lang=lang)
 
 
 def html_dialogue_audio_player(label, dialogue_lines, line_pause_ms=1400, height=105):
@@ -1635,7 +1635,7 @@ def show_word_cards(theme_words, theme_name):
 
         st.markdown('<div class="word-card">', unsafe_allow_html=True)
 
-        col1, col2, col3, col4, col5 = st.columns([1.25, 1.05, 0.35, 1.65, 1.25])
+        col1, col2, col3, col4, col5, col6 = st.columns([1.2, 1.15, 0.35, 1.25, 1.25, 1.15])
 
         with col1:
             st.markdown(
@@ -1661,13 +1661,14 @@ def show_word_cards(theme_words, theme_name):
             )
 
         with col4:
-            audio_button(
-                "🔊 Nghe",
-                word,
-                key=f"{theme_name}_learn_audio_{idx}"
-            )
+            st.caption("🇺🇸 English")
+            audio_button("🔊 Listen", word, key=f"{theme_name}_learn_audio_{idx}", lang="en")
 
         with col5:
+            st.caption("🇻🇳 Tiếng Việt")
+            audio_button("🔊 Nghe", display_meaning, key=f"{theme_name}_vi_audio_{idx}", lang="vi")
+
+        with col6:
             review_checked = st.checkbox(
                 "Muốn ôn tập",
                 value=checked,
@@ -1738,7 +1739,7 @@ def show_unknown_words_tab():
 
         st.markdown('<div class="word-card">', unsafe_allow_html=True)
 
-        col1, col2, col3, col4, col5 = st.columns([1.25, 1.05, 0.35, 1.65, 1.25])
+        col1, col2, col3, col4, col5, col6 = st.columns([1.2, 1.15, 0.35, 1.25, 1.25, 1.15])
 
         with col1:
             st.markdown(
@@ -1764,13 +1765,14 @@ def show_unknown_words_tab():
             )
 
         with col4:
-            audio_button(
-                "🔊 Nghe",
-                word,
-                key=f"unknown_word_audio_{idx}_{review_id}"
-            )
+            st.caption("🇺🇸 English")
+            audio_button("🔊 Listen", word, key=f"unknown_word_audio_{idx}_{review_id}", lang="en")
 
         with col5:
+            st.caption("🇻🇳 Tiếng Việt")
+            audio_button("🔊 Nghe", meaning, key=f"unknown_word_vi_audio_{idx}_{review_id}", lang="vi")
+
+        with col6:
             if st.button("Xóa", key=f"delete_unknown_{idx}_{review_id}", use_container_width=True):
                 remove_unknown_word(review_id)
 
